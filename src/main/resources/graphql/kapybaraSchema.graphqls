@@ -1,0 +1,20 @@
+type Query{
+
+    getMainBotInfoByKey(key: String!): MainBotInfoModel
+}
+
+type Mutation {
+    addMainBotInfo(mainBotInfo: MainBotInfoInput!): MainBotInfoModel
+}
+
+type MainBotInfoModel{
+    idInfo: Int
+    key: String
+    value: String
+}
+
+input MainBotInfoInput{
+    idInfo: Int
+    key: String
+    value: String
+}

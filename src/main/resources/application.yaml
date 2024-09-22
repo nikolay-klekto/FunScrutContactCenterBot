@@ -1,0 +1,26 @@
+server:
+  port: 8188
+  error:
+    include-stacktrace: never
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  graphql:
+    enable: true
+    cors:
+      allowed-origins: true
+      printer:
+        enabled: true
+logging:
+  level:
+    springframework:
+      cache:
+        DEBUG
+    org:
+      jooq:
+        tools:
+          LoggerListener: debug
+
