@@ -1,10 +1,32 @@
 type Query{
+    getMenuInfoById(menuId: ID!): MenuInfoModel
+    getAllMenuInfo: [MenuInfoModel]
 
     getMainBotInfoByKey(key: String!): MainBotInfoModel
+
+    getButtonsByMenuId(menuId: ID): [ButtonModel]
+    getAllButtonsInfo: [ButtonModel]
+
+    getAllUsersCount:ID
 }
 
 type Mutation {
     addMainBotInfo(mainBotInfo: MainBotInfoInput!): MainBotInfoModel
+
+    addMenuInfo(menuInfo: MenuInfoInput!): MenuInfoModel
+    updateMenuInfo(title: String!, menuInfo: MenuInfoInput!): Boolean
+    deleteMenuInfoById(menuId: ID): Boolean
+
+    addButton(button: ButtonInput!): ButtonModel
+    updateButton(menuId: ID!, label: String!, button: ButtonInput!): Boolean
+    deleteButton(menuId: ID!, label: String!): Boolean
+}
+
+type MenuInfoModel {
+    menuId: Int
+    description: String
+    parentId: Int
+    dateCreated: String
 }
 
 type MainBotInfoModel{
@@ -13,8 +35,41 @@ type MainBotInfoModel{
     value: String
 }
 
+type UserModel{
+    userId: ID
+    telegramId: ID
+    username: String
+    dateCreated: String
+    reminders: String
+}
+
+type ButtonModel{
+    buttonId: Int
+    menuId: Int
+    label: String
+    actionType: String
+    actionData: String
+    dateCreated: String
+    position: Int
+}
+
 input MainBotInfoInput{
     idInfo: Int
     key: String
     value: String
+}
+
+input MenuInfoInput{
+    menuId: Int
+    description: String
+    parentId: Int
+}
+
+input ButtonInput{
+    buttonId: Int
+    menuId: Int
+    label: String
+    actionType: String
+    actionData: String
+    position: Int
 }
