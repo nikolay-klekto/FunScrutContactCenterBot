@@ -11,7 +11,7 @@ type Query{
 }
 
 type Mutation {
-    addMainBotInfo(mainBotInfo: MainBotInfoInput!): MainBotInfoModel
+    insertPassword(password: String!): Boolean
 
     addMenuInfo(menuInfo: MenuInfoInput!): MenuInfoModel
     updateMenuInfo(title: String!, menuInfo: MenuInfoInput!): Boolean

@@ -22,6 +22,11 @@ public class MainBotInfoController {
         return mainBotInfoRepository.save(mainBotInfo);
     }
 
+    @MutationMapping
+    public Mono<Boolean> insertPassword(@Argument String password) {
+        return mainBotInfoRepository.insertPassword(password);
+    }
+
     @QueryMapping
     public Mono<MainBotInfo> getMainBotInfoByKey(@Argument String key) {
         return mainBotInfoRepository.getMainBotInfoByKey(key);
