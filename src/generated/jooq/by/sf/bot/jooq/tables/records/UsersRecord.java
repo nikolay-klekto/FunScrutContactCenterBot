@@ -10,8 +10,8 @@ import java.time.LocalDate;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record4;
-import org.jooq.Row4;
+import org.jooq.Record5;
+import org.jooq.Row5;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  * Таблица для хранения информации о пользователях
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class UsersRecord extends UpdatableRecordImpl<UsersRecord> implements Record4<Integer, Long, String, LocalDate> {
+public class UsersRecord extends UpdatableRecordImpl<UsersRecord> implements Record5<Integer, Long, String, LocalDate, Boolean> {
 
     private static final long serialVersionUID = 1L;
 
@@ -91,6 +91,21 @@ public class UsersRecord extends UpdatableRecordImpl<UsersRecord> implements Rec
         return (LocalDate) get(3);
     }
 
+    /**
+     * Setter for <code>contact_center_bot.users.is_verified</code>.
+     */
+    public UsersRecord setIsVerified(Boolean value) {
+        set(4, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>contact_center_bot.users.is_verified</code>.
+     */
+    public Boolean getIsVerified() {
+        return (Boolean) get(4);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -101,17 +116,17 @@ public class UsersRecord extends UpdatableRecordImpl<UsersRecord> implements Rec
     }
 
     // -------------------------------------------------------------------------
-    // Record4 type implementation
+    // Record5 type implementation
     // -------------------------------------------------------------------------
 
     @Override
-    public Row4<Integer, Long, String, LocalDate> fieldsRow() {
-        return (Row4) super.fieldsRow();
+    public Row5<Integer, Long, String, LocalDate, Boolean> fieldsRow() {
+        return (Row5) super.fieldsRow();
     }
 
     @Override
-    public Row4<Integer, Long, String, LocalDate> valuesRow() {
-        return (Row4) super.valuesRow();
+    public Row5<Integer, Long, String, LocalDate, Boolean> valuesRow() {
+        return (Row5) super.valuesRow();
     }
 
     @Override
@@ -135,6 +150,11 @@ public class UsersRecord extends UpdatableRecordImpl<UsersRecord> implements Rec
     }
 
     @Override
+    public Field<Boolean> field5() {
+        return Users.USERS.IS_VERIFIED;
+    }
+
+    @Override
     public Integer component1() {
         return getUserId();
     }
@@ -155,6 +175,11 @@ public class UsersRecord extends UpdatableRecordImpl<UsersRecord> implements Rec
     }
 
     @Override
+    public Boolean component5() {
+        return getIsVerified();
+    }
+
+    @Override
     public Integer value1() {
         return getUserId();
     }
@@ -172,6 +197,11 @@ public class UsersRecord extends UpdatableRecordImpl<UsersRecord> implements Rec
     @Override
     public LocalDate value4() {
         return getDateCreated();
+    }
+
+    @Override
+    public Boolean value5() {
+        return getIsVerified();
     }
 
     @Override
@@ -199,11 +229,18 @@ public class UsersRecord extends UpdatableRecordImpl<UsersRecord> implements Rec
     }
 
     @Override
-    public UsersRecord values(Integer value1, Long value2, String value3, LocalDate value4) {
+    public UsersRecord value5(Boolean value) {
+        setIsVerified(value);
+        return this;
+    }
+
+    @Override
+    public UsersRecord values(Integer value1, Long value2, String value3, LocalDate value4, Boolean value5) {
         value1(value1);
         value2(value2);
         value3(value3);
         value4(value4);
+        value5(value5);
         return this;
     }
 
@@ -221,13 +258,14 @@ public class UsersRecord extends UpdatableRecordImpl<UsersRecord> implements Rec
     /**
      * Create a detached, initialised UsersRecord
      */
-    public UsersRecord(Integer userId, Long telegramId, String username, LocalDate dateCreated) {
+    public UsersRecord(Integer userId, Long telegramId, String username, LocalDate dateCreated, Boolean isVerified) {
         super(Users.USERS);
 
         setUserId(userId);
         setTelegramId(telegramId);
         setUsername(username);
         setDateCreated(dateCreated);
+        setIsVerified(isVerified);
     }
 
     /**
@@ -241,6 +279,7 @@ public class UsersRecord extends UpdatableRecordImpl<UsersRecord> implements Rec
             setTelegramId(value.getTelegramId());
             setUsername(value.getUsername());
             setDateCreated(value.getDateCreated());
+            setIsVerified(value.getIsVerified());
         }
     }
 }

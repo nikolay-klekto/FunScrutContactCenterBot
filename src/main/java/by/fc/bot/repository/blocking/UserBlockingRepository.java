@@ -1,8 +1,10 @@
 package by.fc.bot.repository.blocking;
 
-import by.sf.bot.jooq.tables.Users;
+import by.sf.bot.jooq.tables.pojos.Users;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
+
+import java.util.Map;
 
 import static by.sf.bot.jooq.tables.Users.USERS;
 
@@ -23,6 +25,13 @@ public class UserBlockingRepository {
         return newUserRecord.getUserId();
     }
 
+    public int update(Users users) {
+        return dsl.update(USERS)
+                .set(USERS.IS_VERIFIED, users.getIsVerified())
+                .where(USERS.TELEGRAM_ID.eq(users.getTelegramId()))
+                .execute();
+    }
+
     public boolean isUserExist(Long chatId) {
         return dsl.selectCount()
                 .from(USERS)
@@ -35,5 +44,12 @@ public class UserBlockingRepository {
                 .from(USERS)
                 .where(USERS.TELEGRAM_ID.eq(chatId))
                 .fetchOneInto(Integer.class);
+    }
+
+    public Map<Long, Boolean> getUserVerifiedStatus() {
+        return dsl.select(USERS.TELEGRAM_ID, USERS.IS_VERIFIED)
+                .from(USERS)
+                .fetch()
+                .intoMap(USERS.TELEGRAM_ID, USERS.IS_VERIFIED);
     }
 }

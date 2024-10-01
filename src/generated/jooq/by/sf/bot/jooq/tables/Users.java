@@ -15,7 +15,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row4;
+import org.jooq.Row5;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -70,6 +70,11 @@ public class Users extends TableImpl<UsersRecord> {
      * создания записи
      */
     public final TableField<UsersRecord, LocalDate> DATE_CREATED = createField(DSL.name("date_created"), SQLDataType.LOCALDATE, this, "Дата создания записи");
+
+    /**
+     * The column <code>contact_center_bot.users.is_verified</code>.
+     */
+    public final TableField<UsersRecord, Boolean> IS_VERIFIED = createField(DSL.name("is_verified"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("false", SQLDataType.BOOLEAN)), this, "");
 
     private Users(Name alias, Table<UsersRecord> aliased) {
         this(alias, aliased, null);
@@ -146,11 +151,11 @@ public class Users extends TableImpl<UsersRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row4 type methods
+    // Row5 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row4<Integer, Long, String, LocalDate> fieldsRow() {
-        return (Row4) super.fieldsRow();
+    public Row5<Integer, Long, String, LocalDate, Boolean> fieldsRow() {
+        return (Row5) super.fieldsRow();
     }
 }

@@ -20,6 +20,7 @@ public class Users implements Serializable {
     private Long      telegramId;
     private String    username;
     private LocalDate dateCreated;
+    private Boolean   isVerified;
 
     public Users() {}
 
@@ -28,18 +29,21 @@ public class Users implements Serializable {
         this.telegramId = value.telegramId;
         this.username = value.username;
         this.dateCreated = value.dateCreated;
+        this.isVerified = value.isVerified;
     }
 
     public Users(
         Integer   userId,
         Long      telegramId,
         String    username,
-        LocalDate dateCreated
+        LocalDate dateCreated,
+        Boolean   isVerified
     ) {
         this.userId = userId;
         this.telegramId = telegramId;
         this.username = username;
         this.dateCreated = dateCreated;
+        this.isVerified = isVerified;
     }
 
     /**
@@ -110,6 +114,21 @@ public class Users implements Serializable {
         return this;
     }
 
+    /**
+     * Getter for <code>contact_center_bot.users.is_verified</code>.
+     */
+    public Boolean getIsVerified() {
+        return this.isVerified;
+    }
+
+    /**
+     * Setter for <code>contact_center_bot.users.is_verified</code>.
+     */
+    public Users setIsVerified(Boolean isVerified) {
+        this.isVerified = isVerified;
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Users (");
@@ -118,6 +137,7 @@ public class Users implements Serializable {
         sb.append(", ").append(telegramId);
         sb.append(", ").append(username);
         sb.append(", ").append(dateCreated);
+        sb.append(", ").append(isVerified);
 
         sb.append(")");
         return sb.toString();
