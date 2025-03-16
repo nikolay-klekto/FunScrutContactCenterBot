@@ -3,3 +3,6 @@ plugins {
 }
 rootProject.name = "funScrutContactCenterBot"
 
+include(":service")
+include(":model")
+

@@ -3,6 +3,7 @@ package by.fc.bot.configuration;
 import by.fc.bot.component.TelegramBot;
 import by.fc.bot.repository.async.ButtonRepository;
 import by.fc.bot.repository.async.MainBotInfoRepository;
+import by.fc.bot.repository.blocking.CallRequestRepository;
 import by.fc.bot.repository.blocking.MainBotInfoBlockingRepository;
 import by.fc.bot.repository.blocking.MenuInfoBlockingRepository;
 import by.fc.bot.repository.blocking.UserBlockingRepository;
@@ -34,8 +35,9 @@ public class BotConfig {
             ButtonRepository buttonRepository,
             UserBlockingRepository userBlockingRepository,
             PasswordService passwordService,
+            CallRequestRepository callRequestRepository,
             MainBotInfoBlockingRepository mainBotInfoBlockingRepository
     ) {
-        return new TelegramBot(mainBotInfoRepository, menuInfoBlockingRepository, buttonRepository, userBlockingRepository,passwordService,mainBotInfoBlockingRepository);
+        return new TelegramBot(mainBotInfoRepository, menuInfoBlockingRepository, buttonRepository, userBlockingRepository,passwordService, callRequestRepository, mainBotInfoBlockingRepository);
     }
 }

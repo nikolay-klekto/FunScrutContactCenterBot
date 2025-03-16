@@ -2,6 +2,7 @@ package by.fc.bot.component;
 
 import by.fc.bot.repository.async.ButtonRepository;
 import by.fc.bot.repository.async.MainBotInfoRepository;
+import by.fc.bot.repository.blocking.CallRequestRepository;
 import by.fc.bot.repository.blocking.MainBotInfoBlockingRepository;
 import by.fc.bot.repository.blocking.MenuInfoBlockingRepository;
 import by.fc.bot.repository.blocking.UserBlockingRepository;
@@ -33,6 +34,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final ButtonRepository buttonRepository;
     private final UserBlockingRepository userBlockingRepository;
 
+    private final CallRequestRepository callRequestRepository;
+
     private final MainBotInfoBlockingRepository mainBotInfoBlockingRepository;
 
     private String botUsername = "";
@@ -40,16 +43,20 @@ public class TelegramBot extends TelegramLongPollingBot {
     private Map<Integer, Map<Integer, Buttons>> menuWithButtonsCollection = new HashMap<>();
     private List<MenuInfo> menuInfoList = new ArrayList<>();
 
+    private final Map<Long, Boolean> waitingForRequestId = new HashMap<>();
+
+
     private Map<Long, Boolean> usersVerificationStates = new HashMap<>();
 
     public TelegramBot(MainBotInfoRepository mainBotInfoRepository,
                        MenuInfoBlockingRepository menuInfoBlockingRepository,
                        ButtonRepository buttonRepository,
-                       UserBlockingRepository userBlockingRepository, PasswordService passwordService, MainBotInfoBlockingRepository mainBotInfoBlockingRepository) {
+                       UserBlockingRepository userBlockingRepository, PasswordService passwordService, CallRequestRepository callRequestRepository, MainBotInfoBlockingRepository mainBotInfoBlockingRepository) {
         this.mainBotInfoRepository = mainBotInfoRepository;
         this.menuInfoBlockingRepository = menuInfoBlockingRepository;
         this.buttonRepository = buttonRepository;
         this.userBlockingRepository = userBlockingRepository;
+        this.callRequestRepository = callRequestRepository;
         this.mainBotInfoBlockingRepository = mainBotInfoBlockingRepository;
     }
 
@@ -96,15 +103,23 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+
         if (update.hasCallbackQuery()) {
             String callbackQueryId = update.getCallbackQuery().getId();
             String callbackData = update.getCallbackQuery().getData();
             long callbackChatId = update.getCallbackQuery().getMessage().getChatId();
+            waitingForRequestId.remove(callbackChatId);
 
             answerCallbackQuery(callbackQueryId);
 
             switch (callbackData) {
-                case CALLBACK_DATA_MENU_ID_3 -> sendMenuInfo(callbackChatId, 3);
+                case CALLBACK_DATA_MENU_ID_3 -> {
+                    sendMenuInfo(callbackChatId, 3);
+                    waitingForRequestId.put(callbackChatId, true);
+                }
+                case CALLBACK_DATA_ONE_DAY -> sendAllIssuesByPeriodMessage(callbackChatId, DAY);
+                case CALLBACK_DATA_TWO_DAYS -> sendAllIssuesByPeriodMessage(callbackChatId, TWO_DAYS);
+                case CALLBACK_DATA_ONE_WEEK -> sendAllIssuesByPeriodMessage(callbackChatId, WEEK);
             }
             return;
         }
@@ -134,18 +149,40 @@ public class TelegramBot extends TelegramLongPollingBot {
                 throw new RuntimeException(e);
             }
 
-        } else if (startButtons != null) {
-            if (startButtons.get(1).getLabel().equals(messageText)) {
-                sendNotCompletedIssuesMessage(chatId, 5);
-            } else if (startButtons.get(2).getLabel().equals(messageText)) {
-                sendMenuInfo(chatId, 3);
-            } else if (startButtons.get(3).getLabel().equals(messageText)) {
-                sendMenuInfo(chatId, 4);
-            } else if (startButtons.get(4).getLabel().equals(messageText)) {
-                sendMenuInfo(chatId, 12);
-            }
-        } else if (!usersVerificationStates.get(chatId)) {
+        }
+        else if (!usersVerificationStates.get(chatId)) {
             handleVerifyingUser(messageText, chatId);
+        }
+        else if (startButtons != null) {
+            if (startButtons.get(1).getLabel().equals(messageText)) {
+                waitingForRequestId.remove(chatId);
+                sendNotCompletedIssuesMessage(chatId);
+            } else if (startButtons.get(2).getLabel().equals(messageText)) {
+                if(callRequestRepository.getClientNotCompletedRequests().isEmpty()){
+                    sendMenuInfo(chatId, 6);
+                }else{
+                    waitingForRequestId.put(chatId, true);
+                    sendMenuInfo(chatId, 3);
+                }
+            } else if (waitingForRequestId.getOrDefault(chatId, false)) {
+                try {
+                    Long requestId = Long.parseLong(messageText);
+                    completeIssue(requestId);
+                    sendMessage(chatId, "Заявка " + requestId + " обработана успешно.");
+                } catch (NumberFormatException e) {
+                    sendMessage(chatId, "Некорректный ID.");
+                }
+                sendMenuInfo(chatId, MENU_ID_CONTINUE_WORK);
+                waitingForRequestId.remove(chatId);
+            }
+            else if (startButtons.get(3).getLabel().equals(messageText)) {
+                sendMenuInfo(chatId, 4);
+            }
+            else{
+                waitingForRequestId.remove(chatId);
+                sendMenuInfo(chatId, MENU_ID_COMPLETE_ISSUES);
+
+            }
         }
     }
 
@@ -193,10 +230,11 @@ public class TelegramBot extends TelegramLongPollingBot {
         execute(message);
     }
 
-    private void sendNotCompletedIssuesMessage(long chatId, int menuId) {
+    private void sendNotCompletedIssuesMessage(long chatId) {
 
-        List<String> allNotCompletedIssues = new ArrayList<>();
+        List<String> allNotCompletedIssues = callRequestRepository.getClientNotCompletedRequests();
 
+        if(!allNotCompletedIssues.isEmpty()){
         allNotCompletedIssues.forEach(it -> {
             SendMessage message = new SendMessage();
             message.setChatId(String.valueOf(chatId));
@@ -208,13 +246,45 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         });
 
-        sendMenuInfo(chatId, menuId);
+        sendMenuInfo(chatId, MENU_ID_CONTINUE_WORK);
+        }else{
+            sendMenuInfo(chatId, MENU_ID_ALL_ISSUES_COMPLETED);
+        }
+    }
+
+    private void sendAllIssuesByPeriodMessage(long chatId, int daysQuantity) {
+
+        List<String> allIssues = callRequestRepository.getClientRequestsByPeriod(daysQuantity);
+
+        if(!allIssues.isEmpty()){
+            allIssues.forEach(it -> {
+                SendMessage message = new SendMessage();
+                message.setChatId(String.valueOf(chatId));
+                message.setText(it);
+                try {
+                    execute(message);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            sendMenuInfo(chatId, MENU_ID_CONTINUE_WORK);
+        }else{
+            sendMenuInfo(chatId, MENU_ID_IS_NOT_NEW_ISSUES_BY_PERIOD);
+        }
+    }
+
+    private void completeIssue(Long issueId){
+        boolean result = callRequestRepository.completeRequest(issueId);
+        if(!result){
+            throw new NumberFormatException();
+        }
     }
 
     private void sendStartMessageAfterVerification(long chatId) {
         MenuInfo currentMenuModel = menuInfoList.stream()
                 .filter(menuInfo ->
-                                menuInfo.getParentId() != null && menuInfo.getParentId() == PAGE_AFTER_LOGIN_MENU_ID
+                                menuInfo.getParentId() != null && menuInfo.getParentId() == START_PAGE_MENU_ID
                 )
                 .findFirst()
                 .orElse(null);
@@ -269,15 +339,17 @@ public class TelegramBot extends TelegramLongPollingBot {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        currentButtonList.values().forEach(button -> {
-            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-            inlineKeyboardButton.setText(button.getLabel());
+        if(currentButtonList != null){
+            currentButtonList.values().forEach(button -> {
+                InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+                inlineKeyboardButton.setText(button.getLabel());
 
-             if (ACTION_TYPE_CALLBACK.equals(button.getActionType()) && button.getActionData() != null) {
-                inlineKeyboardButton.setCallbackData(button.getActionData());
-                keyboard.add(List.of(inlineKeyboardButton));
-            }
-        });
+                if (ACTION_TYPE_CALLBACK.equals(button.getActionType()) && button.getActionData() != null) {
+                    inlineKeyboardButton.setCallbackData(button.getActionData());
+                    keyboard.add(List.of(inlineKeyboardButton));
+                }
+            });
+        }
 
         if (!keyboard.isEmpty()) {
             inlineKeyboardMarkup.setKeyboard(keyboard);
@@ -296,7 +368,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private static final int PAGE_AFTER_LOGIN_MENU_ID = 1;
+    private static final int START_PAGE_MENU_ID = 1;
+    private static final int PAGE_AFTER_LOGIN_MENU_ID = 2;
     private static final String BOT_USERNAME = "botUsername";
     private static final String BOT_TOKEN = "botToken";
     private static final String START_MESSAGE = "/start";
@@ -306,5 +379,25 @@ public class TelegramBot extends TelegramLongPollingBot {
     private static final String VERIFICATION_FAIL_MESSAGE = "Пароль неверный, проверьте, и попробуйте снова";
 
     private static final String CALLBACK_DATA_MENU_ID_3 = "menu_id:3";
+
+    private static final String CALLBACK_DATA_ONE_DAY = "oneDay";
+
+    private static final String CALLBACK_DATA_TWO_DAYS = "twoDays";
+
+    private static final String CALLBACK_DATA_ONE_WEEK = "oneWeek";
+
+    private static final int MENU_ID_CONTINUE_WORK = 5;
+
+    private static final int MENU_ID_ALL_ISSUES_COMPLETED = 6;
+
+    private static final int MENU_ID_IS_NOT_NEW_ISSUES_BY_PERIOD = 8;
+
+    private static final int MENU_ID_COMPLETE_ISSUES = 7;
+
+    private static final int DAY = 1;
+
+    private static final int TWO_DAYS = 2;
+    private static final int WEEK = 7;
+
 
 }

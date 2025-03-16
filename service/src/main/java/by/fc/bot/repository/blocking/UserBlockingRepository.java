@@ -17,26 +17,27 @@ public class UserBlockingRepository {
         this.dsl = dsl;
     }
 
-    public Integer save(Users user) {
+    public void save(Users user) {
         var newUserRecord = dsl.newRecord(USERS);
         newUserRecord.from(user);
         newUserRecord.reset(USERS.USER_ID);
         newUserRecord.store();
-        return newUserRecord.getUserId();
     }
 
-    public int update(Users users) {
-        return dsl.update(USERS)
+    public void update(Users users) {
+        dsl.update(USERS)
                 .set(USERS.IS_VERIFIED, users.getIsVerified())
                 .where(USERS.TELEGRAM_ID.eq(users.getTelegramId()))
                 .execute();
     }
 
     public boolean isUserExist(Long chatId) {
-        return dsl.selectCount()
+        Long count = dsl.selectCount()
                 .from(USERS)
                 .where(USERS.TELEGRAM_ID.eq(chatId))
-                .fetchOne(0, Long.class) > 0;
+                .fetchOne(0, Long.class);
+
+        return count != null && count > 0;
     }
 
     public Integer getUserIdByTelegramId(Long chatId) {
