@@ -1,5 +1,5 @@
 server:
-  port: 8188
+  port: 8189
   error:
     include-stacktrace: never
 
@@ -14,6 +14,12 @@ spring:
       allowed-origins: true
       printer:
         enabled: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: funscrutFirst
+    password: 191220#Destin
+
 logging:
   level:
     springframework:

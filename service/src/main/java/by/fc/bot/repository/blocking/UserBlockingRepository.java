@@ -4,6 +4,7 @@ import by.sf.bot.jooq.tables.pojos.Users;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Map;
 
 import static by.sf.bot.jooq.tables.Users.USERS;
@@ -52,5 +53,12 @@ public class UserBlockingRepository {
                 .from(USERS)
                 .fetch()
                 .intoMap(USERS.TELEGRAM_ID, USERS.IS_VERIFIED);
+    }
+
+    public List<Long> getAllVerifyingUsersIds(){
+        return dsl.select(USERS.TELEGRAM_ID)
+                .from(USERS)
+                .where(USERS.IS_VERIFIED.eq(Boolean.TRUE))
+                .fetchInto(Long.class);
     }
 }

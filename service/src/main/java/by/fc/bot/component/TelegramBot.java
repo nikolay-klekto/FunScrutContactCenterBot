@@ -327,7 +327,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
 
-    private void sendMenuInfo(long chatId, int menuId) {
+    public void sendMenuInfo(long chatId, int menuId) {
 
         MenuInfo currentMenuModel = menuInfoList.stream()
                 .filter(menuInfo -> menuInfo.getMenuId() == menuId)

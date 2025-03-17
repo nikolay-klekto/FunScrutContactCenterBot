@@ -52,6 +52,7 @@ dependencies {
 
     implementation("org.mindrot:jbcrypt:0.4")
 
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
