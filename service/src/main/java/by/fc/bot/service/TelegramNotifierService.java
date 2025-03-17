@@ -22,13 +22,13 @@ public class TelegramNotifierService {
 
     @RabbitListener(queues = "call_requests_queue")
     public void processCallRequest(CallRequests callRequest) {
-        // Логика отправки в Telegram
+        // Р›РѕРіРёРєР° РѕС‚РїСЂР°РІРєРё РІ Telegram
         List<Long> verifyingUsers = userBlockingRepository.getAllVerifyingUsersIds();
         verifyingUsers.forEach(it ->{
             telegramBot.sendMenuInfo(it, 9);
                 }
         );
-        System.out.println("Отправка заявки в Telegram: " + callRequest);
+        System.out.println("РћС‚РїСЂР°РІРєР° Р·Р°СЏРІРєРё РІ Telegram: " + callRequest);
     }
 }
 
