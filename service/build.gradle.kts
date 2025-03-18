@@ -1,4 +1,3 @@
-
 import nu.studer.gradle.jooq.JooqEdition
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -38,8 +37,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.telegram:telegrambots-spring-boot-starter:5.6.0")
 
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.kohlschutter.junixsocket:junixsocket-core:2.6.0")
     implementation("org.apache.httpcomponents:httpclient:4.5.13")
@@ -56,6 +55,10 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
+
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.3")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.3")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.3")
 }
 
 tasks.withType<KotlinCompile> {
