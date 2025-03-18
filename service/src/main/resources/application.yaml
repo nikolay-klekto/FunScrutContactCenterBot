@@ -15,10 +15,11 @@ spring:
       printer:
         enabled: true
   rabbitmq:
-    host: localhost
+    host: rabbitmq
     port: 5672
     username: funscrutFirst
     password: 191220#Destin
+    virtual-host: /
 
 logging:
   level:
