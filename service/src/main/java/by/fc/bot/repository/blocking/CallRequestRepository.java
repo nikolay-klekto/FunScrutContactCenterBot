@@ -5,6 +5,7 @@ import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +20,9 @@ public class CallRequestRepository {
     public CallRequestRepository(DSLContext dsl) {
         this.dsl = dsl;
     }
+
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm"); // Формат без секунд
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // Формат даты
 
     public List<String> getClientNotCompletedRequests() {
         List<String> resultList = new ArrayList<>();
@@ -37,8 +41,8 @@ public class CallRequestRepository {
                                     """,
                             it.getId(),
                             it.getName(), it.getPhoneNum(), it.getCallTime(),
-                            it.getDateCreated().toLocalDate().toString(),
-                            it.getDateCreated().toLocalTime().toString()));
+                            it.getDateCreated().toLocalDate().format(dateFormatter),
+                            it.getDateCreated().toLocalTime().format(timeFormatter)));
                 }
         );
         return resultList;
@@ -62,8 +66,8 @@ public class CallRequestRepository {
                                     Статус заявки: %s.
                                     """,
                             it.getId(), it.getName(), it.getPhoneNum(), it.getCallTime(),
-                            it.getDateCreated().toLocalDate().toString(),
-                            it.getDateCreated().toLocalTime().toString(),
+                            it.getDateCreated().toLocalDate().format(dateFormatter),
+                            it.getDateCreated().toLocalTime().format(timeFormatter),
                             issueStatus));
                 }
         );
